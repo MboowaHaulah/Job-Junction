@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Flask</title>
+        <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+        <style>  
+            body {
+                padding-top: 3rem;
+                background-color: #121212;
+                color: white;
+            }
+
+            .card {
+                background-color: #333;
+                color: white;
+                margin: 1rem;
+                padding: 20px;
+                border: none;
+            }
+        </style>
+
+    </head>
+      
+    <body>
+        <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url_for('organization_dashboard') }}"><h1 style="margin-right: 6rem;">The Job Junction</h1></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('organization_dashboard') }}">Opportunities</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('responses') }}">Responses</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="d-flex">
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light mx-2">Log out</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="mt-5" style="margin: auto 9vw;">
+            <h1>Welcome, {{ g.user[1] }} to your dashboard.</h1>
+            <div class="row">
+                <div class="card col-md-9" style="background-color: white; color: black;">
+                    <h2>Opportunities posted</h2>
+                    <hr>
+                    <h2>Internships</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Duration</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for internship in g.internships %}
+                            <tr>
+                                <td>{{ internship[1] }} weeks</td>
+                                <td>{{ internship[2] }}</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm" onclick="Edit_intern('{{ internship[0] }}')">Edit</button>
+                                    <button class="btn btn-danger btn-sm" onclick="Delete_intern('{{ internship[0] }}')">Take down</button>
+                                </td>
+                            </tr>                            
+                            <!-- Edit internship popup -->
+                            <div class="modal fade" id="edit_intern_{{ internship[0] }}" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h3 class="modal-title" id="editModalLabel">Edit Opportunity:</h3>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{ url_for('edit',type = 'internship', id = internship[0] ) }}" method="POST">
+                                                <input type="number" name="id" value="{{ g.user[0] }}" required style="display: none;">
+                                                <input type="text" name="type" value="internship" required style="display: none;">
+                                                <div class="mb-3">
+                                                    <input type="number" name="duration" class="form-control" placeholder="Duration(Weeks)" value="{{ internship[1] }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <textarea name="description" class="form-control" placeholder="Description" required>{{ internship[2] }}</textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Update internship details</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Delete internship popup -->
+                            <div class="modal fade" id="delete_intern_{{ internship[0] }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Are you sure you want to delete this internship opportunity?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <a href=" {{ url_for('delete',type = 'internship', id = internship[0] ) }} " class="btn btn-danger">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                    <hr>
+                    <br>
+                    <h2>Jobs</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in g.jobs %}
+                            <tr>
+                                <td>{{ job[2] }}</td>
+                                <td>{{ job[3] }}</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm" onclick="Edit_job('{{ job[0] }}')">Edit</button>
+                                    <button class="btn btn-danger btn-sm" onclick="Delete_job('{{ job[0] }}')">Take down</button>
+                                </td>
+                            </tr>                                                        
+                            <!-- Edit job popup -->
+                            <div class="modal fade" id="edit_job_{{ job[0] }}" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h3 class="modal-title" id="editModalLabel">Edit details:</h3>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{ url_for('edit',type = 'job', id = job[0] ) }}" method="POST">
+                                                <input type="number" name="id" value="{{ g.user[0] }}" required style="display: none;">
+                                                <input type="text" name="type" value="job" required style="display: none;">
+                                                <div class="mb-3">
+                                                    <input type="text" name="position" class="form-control" placeholder="Position" value="{{ job[2] }}" disabled required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <textarea name="description" class="form-control" placeholder="Description" required>{{ job[3] }}</textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Update job details</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Delete job popup -->
+                            <div class="modal fade" id="delete_job_{{ job[0] }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Are you sure you want to delete this job opportunity?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <a href=" {{ url_for('delete',type = 'job', id = job[0] ) }} " class="btn btn-danger">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col">
+                    <div class="col card">
+                        <h2>Post an Internship Opportunity</h2>
+                        <form action="{{ url_for('new_opportunity') }}" method="POST">
+                            <input type="number" name="id" value="{{ g.user[0] }}" required style="display: none;">
+                            <input type="text" name="type" value="internship" required style="display: none;">
+                            <div class="mb-3">
+                                <input type="number" name="duration" class="form-control" placeholder="Duration(Weeks)" required>
+                            </div>
+                            <div class="mb-3">
+                                <textarea name="description" class="form-control" placeholder="Description"
+                                    required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Post Internship Opportunity</button>
+                        </form>
+                    </div>
+                    <div class="col card">
+                        <h2>Post a Job Opportunity</h2>
+                        <form action="{{ url_for('new_opportunity') }}" method="POST">
+                            <input type="number" name="id" value="{{ g.user[0] }}" required style="display: none;">
+                            <input type="text" name="type" value="job" required style="display: none;">
+                            <div class="mb-3">
+                                <input type="text" name="position" class="form-control" placeholder="Position" required>
+                            </div>
+                            <div class="mb-3">
+                                <textarea name="description" class="form-control" placeholder="Description"
+                                    required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Post Job Opportunity</button>
+                        </form>
+                    </div>
+                </div>
+        
+            </div>
+        </div>        
+
+        <nav class="navbar fixed-bottom navbar-dark bg-dark">
+            <div class="container">
+                <span class="navbar-text">
+                    &copy; 2023 Seeker. All rights reserved.
+                </span>
+            </div>
+        </nav>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="modal" tabindex="-1" role="dialog" id="notificationModal" style="color: black;">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <p>{{ messages[0] }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                    var notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+                    notificationModal.show();
+                    });
+                </script>
+            {% endif %}
+        {% endwith %}
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+        <script>
+            function Edit_intern(id) {
+                let str = "edit_intern_" + id;
+                var mypopup = new bootstrap.Modal(document.getElementById(str));
+    
+                mypopup.show();         
+            }
+            function Delete_intern(id) {
+                let str = "delete_intern_" + id;
+                var mypopup = new bootstrap.Modal(document.getElementById(str));
+    
+                mypopup.show();         
+            }
+            function Edit_job(id) {
+                let str = "edit_job_" + id;
+                var mypopup = new bootstrap.Modal(document.getElementById(str));
+    
+                mypopup.show();         
+            }
+            function Delete_job(id) {
+                let str = "delete_job_" + id;
+                var mypopup = new bootstrap.Modal(document.getElementById(str));
+    
+                mypopup.show();         
+            }
+        </script>
+        
+    </body>
+</html>
